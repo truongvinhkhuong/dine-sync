@@ -1,0 +1,188 @@
+services:
+  traefik:
+    image: traefik:v3.3
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8090:8080"  # Changed to expose dashboard on port 8090
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=DEBUG"
+      - "--accesslog=true"
+      - "--providers.docker.network=app-net"
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--spider", "--tries=1", "http://localhost:8080/api/version"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  db1:
+    image: postgres:15
+    container_name: db1
+    environment:
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: midterm-domain1
+    ports:
+      - "5434:5432"  
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-net
+    volumes:
+      - postgres_data1:/var/lib/postgresql/data
+
+  db2:
+    image: postgres:15
+    container_name: db2
+    environment:
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: midterm-domain2
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-net
+    volumes:
+      - postgres_data2:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-net
+
+  domain-1:
+    build:
+      context: ./domain-1
+    container_name: domain-1
+    restart: unless-stopped
+    expose:
+      - "8081"
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db1:5432/midterm-domain1
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=123456
+      - SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT=60000
+      - SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=10
+      - JWT_SECRET=rSp/kisYeCdda6X8j0HA6jYCcpevXe6LQe3wHTPTC7GP5bQ5gqN15cLkAhtVomGpmT08rSqoyiD1wRxFOGhg8A==
+      - JWT_EXPIRATION=86400000
+      - LOGGING_LEVEL_ROOT=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=DEBUG
+      - SERVER_SERVLET_CONTEXT_PATH=/identity
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - SERVER_FORWARD_HEADERS_STRATEGY=FRAMEWORK
+      - SERVER_USE_FORWARD_HEADERS=true
+    depends_on:
+      db1:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8081/identity/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s  # Increased start period
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=app-net"
+      
+      # Identity path configuration
+      - "traefik.http.routers.domain-1.rule=PathPrefix(`/identity`)"
+      - "traefik.http.routers.domain-1.entrypoints=web"
+      - "traefik.http.services.domain-1.loadbalancer.server.port=8081"
+      - "traefik.http.services.domain-1.loadbalancer.passHostHeader=true"
+    networks:
+      - app-net
+
+  domain-2:
+    build:
+      context: ./domain-2
+    container_name: domain-2
+    restart: unless-stopped
+    expose:
+      - "8082"
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db2:5432/midterm-domain2
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=123456
+      - SERVER_SERVLET_CONTEXT_PATH=/domain2
+      - SERVER_FORWARD_HEADERS_STRATEGY=framework
+      - JWT_SECRET=rSp/kisYeCdda6X8j0HA6jYCcpevXe6LQe3wHTPTC7GP5bQ5gqN15cLkAhtVomGpmT08rSqoyiD1wRxFOGhg8A==
+      - JWT_EXPIRATION=86400000
+      - LOGGING_LEVEL_ROOT=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=DEBUG
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    depends_on:
+      db2:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--max-time", "10", "http://localhost:8082/domain2/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.domain-2.rule=PathPrefix(`/domain2`)"
+      - "traefik.http.routers.domain-2.entrypoints=web"
+      - "traefik.http.services.domain-2.loadbalancer.server.port=8082"
+      # Only use the strip middleware if you want to remove the path prefix
+      # - "traefik.http.middlewares.domain-2-strip.stripprefix.prefixes=/domain2"
+      # - "traefik.http.routers.domain-2.middlewares=domain-2-strip@docker"
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge
+
+volumes:
+  postgres_data1:
+  postgres_data2:
+
+

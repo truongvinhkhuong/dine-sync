@@ -1,0 +1,6 @@
+[submodule "domain-1"]
+	path = domain-1
+	url = https://github.com/khuong2924/smartorder-domain1
+[submodule "domain-2"]
+	path = domain-2
+	url = https://github.com/khuong2924/smartorder-domain2
