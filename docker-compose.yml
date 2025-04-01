@@ -195,6 +195,59 @@ services:
     networks:
       - app-net
 
+  kitchen-domain:
+    build:
+      context: kitchen-domain  
+      args:
+        - JWT_SECRET=${JWT_SECRET}
+        - JWT_EXPIRATION=${JWT_EXPIRATION}
+    container_name: kitchen-domain
+    restart: unless-stopped
+    expose:
+      - "8083"
+    ports:
+      - "8083:8083"
+    env_file:
+      - .env
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db2:5432/midterm-domain2
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=123456
+      - SERVER_PORT=8083
+      - SERVER_SERVLET_CONTEXT_PATH=/kitchen
+      - SERVER_FORWARD_HEADERS_STRATEGY=framework
+      - JWT_SECRET=rSp/kisYeCdda6X8j0HA6jYCcpevXe6LQe3wHTPTC7GP5bQ5gqN15cLkAhtVomGpmT08rSqoyiD1wRxFOGhg8A==
+      - JWT_EXPIRATION=86400000
+      - LOGGING_LEVEL_ROOT=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=DEBUG
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    depends_on:
+      db2:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      domain-2:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--max-time", "10", "http://localhost:8083/kitchen/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=app-net"
+      - "traefik.http.routers.kitchen.rule=PathPrefix(`/kitchen`)"
+      - "traefik.http.routers.kitchen.entrypoints=web"
+      - "traefik.http.services.kitchen.loadbalancer.server.port=8083"
+    networks:
+      - app-net
+
 networks:
   app-net:
     driver: bridge
