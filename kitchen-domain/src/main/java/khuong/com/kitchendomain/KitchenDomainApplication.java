@@ -7,14 +7,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @EntityScan(basePackages = {
-    "khuong.com.kitchendomain.entity",
-    "khuong.com.smartorder_domain2.menu.entity",
-    "khuong.com.smartorder_domain2.order.entity"
+    "khuong.com.kitchendomain.entity"
 })
 @EnableJpaRepositories(basePackages = {
-    "khuong.com.kitchendomain.repository",
-    "khuong.com.smartorder_domain2.menu.repository",
-    "khuong.com.smartorder_domain2.order.repository"
+    "khuong.com.kitchendomain.repository"
 })
 public class KitchenDomainApplication {
 

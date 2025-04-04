@@ -18,6 +18,7 @@
     <modules>
         <module>domain-1</module>
         <module>domain-2</module>
+        <module>kitchen-domain</module>
     </modules>
     
     <properties>

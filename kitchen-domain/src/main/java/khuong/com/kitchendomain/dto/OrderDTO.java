@@ -1,6 +1,6 @@
 package khuong.com.kitchendomain.dto;
 
-import khuong.com.smartorder_domain2.order.entity.Order;
+import khuong.com.kitchendomain.entity.Order;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,11 +9,15 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.Setter;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Setter
+@Getter
 public class OrderDTO {
     private Long id;
     private String tableNumber;

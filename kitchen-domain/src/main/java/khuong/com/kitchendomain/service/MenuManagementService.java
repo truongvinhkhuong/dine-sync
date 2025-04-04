@@ -1,17 +1,16 @@
 package khuong.com.kitchendomain.service;
 
 import khuong.com.kitchendomain.dto.MenuItemAvailabilityDTO;
+import khuong.com.kitchendomain.entity.MenuItem;
+import khuong.com.kitchendomain.exception.ResourceNotFoundException;
 import khuong.com.kitchendomain.messaging.MenuAvailabilityPublisher;
-import khuong.com.smartorder_domain2.menu.dto.exception.ResourceNotFoundException;
-import khuong.com.smartorder_domain2.menu.entity.MenuItem;
-import khuong.com.smartorder_domain2.menu.repository.MenuItemRepository;
+import khuong.com.kitchendomain.repository.MenuItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -35,14 +34,14 @@ public class MenuManagementService {
         MenuItem menuItem = menuItemRepository.findById(availabilityDTO.getMenuItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy món ăn với ID: " + availabilityDTO.getMenuItemId()));
         
-        menuItem.setAvailable(availabilityDTO.getAvailable());
-        menuItemRepository.save(menuItem);
+        menuItem.setAvailable(availabilityDTO.isAvailable());
+        MenuItem savedItem = menuItemRepository.save(menuItem);
         
-        // Gửi thông báo cập nhật trạng thái
-        menuAvailabilityPublisher.publishMenuItemAvailabilityUpdate(menuItem);
+        // Thông báo thay đổi trạng thái món ăn
+        menuAvailabilityPublisher.publishMenuItemAvailabilityChange(savedItem);
         
-        log.info("Đã cập nhật trạng thái sẵn có của món ăn ID {}: {}", 
-                menuItem.getId(), menuItem.getAvailable());
+        log.info("Cập nhật trạng thái của món ăn {} thành {}", savedItem.getName(), 
+                savedItem.isAvailable() ? "có sẵn" : "không có sẵn");
     }
 
     // update trạng thái sẵn có của nhiều món ăn

@@ -3,9 +3,11 @@ package khuong.com.kitchendomain.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -13,11 +15,12 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class MenuItemAvailabilityDTO {
-    private Long menuItemId;
+public class MenuItemResponseDTO {
+    private Long id;
+    private String name;
+    private String description;
+    private BigDecimal price;
+    private Integer preparationTime;
+    private String imageUrl;
     private Boolean available;
-
-    public boolean isAvailable() {
-        return available != null && available;
-    }
 }

@@ -19,6 +19,7 @@ services:
       - "--log.level=DEBUG"
       - "--accesslog=true"
       - "--providers.docker.network=app-net"
+      - "--providers.docker.watch=true"  # Make sure Docker provider watches for changes
     networks:
       - app-net
     healthcheck:
@@ -197,10 +198,11 @@ services:
 
   kitchen-domain:
     build:
-      context: kitchen-domain  
+      context: . 
+      dockerfile: kitchen-domain/Dockerfile
       args:
-        - JWT_SECRET=${JWT_SECRET}
-        - JWT_EXPIRATION=${JWT_EXPIRATION}
+        - JWT_SECRET=${JWT_SECRET:-rSp/kisYeCdda6X8j0HA6jYCcpevXe6LQe3wHTPTC7GP5bQ5gqN15cLkAhtVomGpmT08rSqoyiD1wRxFOGhg8A==}
+        - JWT_EXPIRATION=${JWT_EXPIRATION:-86400000}
     container_name: kitchen-domain
     restart: unless-stopped
     expose:
@@ -209,6 +211,7 @@ services:
       - "8083:8083"
     env_file:
       - .env
+      - ./kitchen-domain/.env 
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db2:5432/midterm-domain2
       - SPRING_DATASOURCE_USERNAME=postgres
@@ -226,6 +229,14 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_SHOW_SQL=true
+      - MANAGEMENT_HEALTH_REDIS_ENABLED=false
+      - MANAGEMENT_HEALTH_REDIS_CLUSTERS_ENABLED=false
+      - SPRING_AUTOCONFIGURE_EXCLUDE=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - DB_HOST=db2
+      - DB_PORT=5432
+      - DB_NAME=midterm-domain2
     depends_on:
       db2:
         condition: service_healthy
@@ -242,11 +253,26 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=app-net"
-      - "traefik.http.routers.kitchen.rule=PathPrefix(`/kitchen`)"
-      - "traefik.http.routers.kitchen.entrypoints=web"
-      - "traefik.http.services.kitchen.loadbalancer.server.port=8083"
+      - "traefik.http.routers.kitchen-domain.rule=PathPrefix(`/kitchen`)"
+      - "traefik.http.routers.kitchen-domain.entrypoints=web"
+      - "traefik.http.services.kitchen-domain.loadbalancer.server.port=8083"
     networks:
       - app-net
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redisdata:/data
 
 networks:
   app-net:
@@ -256,5 +282,6 @@ volumes:
   pgdata1:
   pgdata2:
   rabbitmqdata:
+  redisdata:
 
 

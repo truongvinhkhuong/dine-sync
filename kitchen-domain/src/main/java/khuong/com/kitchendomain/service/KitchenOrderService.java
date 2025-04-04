@@ -2,14 +2,14 @@ package khuong.com.kitchendomain.service;
 
 import khuong.com.kitchendomain.dto.OrderDTO;
 import khuong.com.kitchendomain.dto.OrderItemStatusUpdateDTO;
+import khuong.com.kitchendomain.entity.Order;
+import khuong.com.kitchendomain.entity.OrderItem;
+import khuong.com.kitchendomain.entity.enums.OrderItemStatus;
+import khuong.com.kitchendomain.entity.enums.OrderStatus;
+import khuong.com.kitchendomain.exception.ResourceNotFoundException;
 import khuong.com.kitchendomain.messaging.OrderStatusPublisher;
-import khuong.com.smartorder_domain2.menu.dto.exception.ResourceNotFoundException;
-import khuong.com.smartorder_domain2.order.entity.Order;
-import khuong.com.smartorder_domain2.order.entity.OrderItem;
-import khuong.com.smartorder_domain2.order.enums.OrderItemStatus;
-import khuong.com.smartorder_domain2.order.enums.OrderStatus;
-import khuong.com.smartorder_domain2.order.repository.OrderItemRepository;
-import khuong.com.smartorder_domain2.order.repository.OrderRepository;
+import khuong.com.kitchendomain.repository.OrderItemRepository;
+import khuong.com.kitchendomain.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,14 +35,12 @@ public class KitchenOrderService {
     }
 
     //get all đơn hàng đang được xử lý
-
     public List<OrderDTO> getInProgressOrders() {
         List<Order> inProgressOrders = orderRepository.findByStatus(OrderStatus.IN_PROGRESS);
         return inProgressOrders.stream()
                 .map(OrderDTO::fromEntity)
                 .collect(Collectors.toList());
     }
-
 
     public OrderDTO getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
@@ -116,5 +114,25 @@ public class KitchenOrderService {
             // Gửi thông báo cập nhật trạng thái
             orderStatusPublisher.publishOrderStatusUpdate(order);
         }
+    }
+
+    @Transactional
+    public void processNewOrder(Long orderId, String status) {
+        log.info("Processing new order: {} with status: {}", orderId, status);
+        
+        // 1. Retrieve order details from the database if needed
+        
+        // 2. Create a kitchen ticket for the order
+        
+        // 3. Assign the order to kitchen staff
+        
+        // 4. Update the order status if needed
+    }
+    
+    @Transactional
+    public void updateOrderStatus(Long orderId, String status) {
+        log.info("Updating order {} status to {}", orderId, status);
+        
+        // Update the order status in the kitchen system
     }
 }

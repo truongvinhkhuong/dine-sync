@@ -1,7 +1,7 @@
 package khuong.com.kitchendomain.messaging;
 
 import khuong.com.kitchendomain.config.RabbitMQConfig;
-import khuong.com.smartorder_domain2.menu.entity.MenuItem;
+import khuong.com.kitchendomain.entity.MenuItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -16,17 +16,20 @@ import java.util.Map;
 public class MenuAvailabilityPublisher {
     private final RabbitTemplate rabbitTemplate;
 
-    public void publishMenuItemAvailabilityUpdate(MenuItem menuItem) {
+    public void publishMenuItemAvailabilityChange(MenuItem menuItem) {
         Map<String, Object> message = new HashMap<>();
         message.put("menuItemId", menuItem.getId());
-        message.put("available", menuItem.getAvailable());
+        message.put("name", menuItem.getName());
+        message.put("available", menuItem.isAvailable());
         message.put("timestamp", System.currentTimeMillis());
 
-        log.info("Gửi cập nhật trạng thái sẵn có của món ăn: {}", message);
         rabbitTemplate.convertAndSend(
-                RabbitMQConfig.KITCHEN_EXCHANGE,
-                RabbitMQConfig.MENU_AVAILABILITY_ROUTING_KEY,
+                RabbitMQConfig.ORDERS_EXCHANGE,
+                "menu-availability",
                 message
         );
+
+        log.info("Đã gửi thông báo thay đổi trạng thái món ăn: {} - {}", 
+                menuItem.getName(), menuItem.isAvailable() ? "có sẵn" : "không có sẵn");
     }
 }

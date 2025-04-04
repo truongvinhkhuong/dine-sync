@@ -2,7 +2,7 @@ package khuong.com.kitchendomain.controller;
 
 import khuong.com.kitchendomain.dto.MenuItemAvailabilityDTO;
 import khuong.com.kitchendomain.service.MenuManagementService;
-import khuong.com.smartorder_domain2.menu.entity.MenuItem;
+import khuong.com.kitchendomain.entity.MenuItem;  
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

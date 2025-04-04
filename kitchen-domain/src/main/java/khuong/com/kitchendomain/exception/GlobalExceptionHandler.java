@@ -1,6 +1,6 @@
 package khuong.com.kitchendomain.exception;
 
-import khuong.com.smartorder_domain2.menu.dto.exception.ResourceNotFoundException;
+import khuong.com.kitchendomain.exception.ResourceNotFoundException;  // Changed import here
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,8 +1,8 @@
 package khuong.com.kitchendomain.messaging;
 
 import khuong.com.kitchendomain.config.RabbitMQConfig;
-import khuong.com.smartorder_domain2.order.entity.Order;
-import khuong.com.smartorder_domain2.order.entity.OrderItem;
+import khuong.com.kitchendomain.entity.Order;
+import khuong.com.kitchendomain.entity.OrderItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -23,26 +23,29 @@ public class OrderStatusPublisher {
         message.put("status", order.getStatus().name());
         message.put("timestamp", System.currentTimeMillis());
 
-        log.info("Gửi cập nhật trạng thái đơn hàng: {}", message);
         rabbitTemplate.convertAndSend(
-                RabbitMQConfig.KITCHEN_EXCHANGE,
-                RabbitMQConfig.ORDER_STATUS_ROUTING_KEY,
+                RabbitMQConfig.ORDERS_EXCHANGE,
+                RabbitMQConfig.ORDER_UPDATE_ROUTING_KEY,
                 message
         );
+
+        log.info("Đã gửi cập nhật trạng thái đơn hàng: {} - {}", order.getId(), order.getStatus());
     }
 
     public void publishOrderItemStatusUpdate(OrderItem orderItem) {
         Map<String, Object> message = new HashMap<>();
         message.put("orderItemId", orderItem.getId());
         message.put("orderId", orderItem.getOrder().getId());
+        message.put("menuItemId", orderItem.getMenuItem().getId());
         message.put("status", orderItem.getStatus().name());
         message.put("timestamp", System.currentTimeMillis());
 
-        log.info("Gửi cập nhật trạng thái món ăn: {}", message);
         rabbitTemplate.convertAndSend(
-                RabbitMQConfig.KITCHEN_EXCHANGE,
-                RabbitMQConfig.ORDER_STATUS_ROUTING_KEY,
+                RabbitMQConfig.ORDERS_EXCHANGE,
+                RabbitMQConfig.ORDER_UPDATE_ROUTING_KEY,
                 message
         );
+
+        log.info("Đã gửi cập nhật trạng thái món ăn: {} - {}", orderItem.getId(), orderItem.getStatus());
     }
 }
