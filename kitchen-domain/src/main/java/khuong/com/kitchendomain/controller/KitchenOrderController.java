@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/kitchen/orders")
+@RequestMapping("/orders")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('KITCHEN_STAFF')")
+// @PreAuthorize("hasRole('KITCHEN_STAFF')")
 public class KitchenOrderController {
     private final KitchenOrderService kitchenOrderService;
 

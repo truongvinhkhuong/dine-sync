@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/kitchen/menu")
+@RequestMapping("/menu")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('KITCHEN_STAFF')")
+// @PreAuthorize("hasRole('KITCHEN_STAFF')")
 public class MenuManagementController {
     private final MenuManagementService menuManagementService;
 
