@@ -11,7 +11,7 @@ import java.util.List;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "menu_categories") // Đảm bảo tên bảng là menu_categories
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,15 +22,15 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
     private String name;
-
+    
     private String description;
-
+    
+    @Column(name = "display_order")
+    private Integer displayOrder;
+    
     private boolean active = true;
-
-    private Integer displayOrder = 0;
-
+    
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<MenuItem> menuItems = new ArrayList<>();
 

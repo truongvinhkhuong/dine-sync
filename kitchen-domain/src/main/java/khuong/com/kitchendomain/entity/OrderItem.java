@@ -19,7 +19,6 @@ import jakarta.persistence.Table;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

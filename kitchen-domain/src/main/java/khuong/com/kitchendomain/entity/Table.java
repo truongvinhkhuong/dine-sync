@@ -30,7 +30,7 @@ public class Table {
     @Enumerated(EnumType.STRING)
     private TableStatus status;
     
-    private boolean active = true;
+    private Boolean active = true;
     
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -40,7 +40,6 @@ public class Table {
     
     public enum TableStatus {
         AVAILABLE,
-        OCCUPIED,
-        RESERVED
+        OCCUPIED
     }
 }

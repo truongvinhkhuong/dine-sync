@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -25,7 +27,7 @@ public class MenuItem implements Serializable {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    private Category category; 
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -45,19 +47,20 @@ public class MenuItem implements Serializable {
     @Column(name = "display_order")
     private Integer displayOrder;
     
-    private boolean vegetarian = false;
-    private boolean spicy = false;
+    @Builder.Default
     private boolean available = true;
+    
+    @Builder.Default
     private boolean active = true;
 
     @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<MenuItemOption> options;
 
-    @CreationTimestamp
+    @CreatedDate
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
+    @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

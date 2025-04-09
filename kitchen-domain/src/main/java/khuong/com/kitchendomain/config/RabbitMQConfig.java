@@ -8,7 +8,6 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,29 +22,29 @@ public class RabbitMQConfig {
     public static final String ORDER_UPDATE_ROUTING_KEY = "order-update";
 
     @Bean
-    Queue ordersQueue() {
+    public Queue newOrderQueue() {
         return new Queue(NEW_ORDER_QUEUE, true);
     }
     
     @Bean
-    Queue orderUpdatesQueue() {
-        return new Queue(ORDER_UPDATES_QUEUE, true);
-    }
-
-    @Bean
-    DirectExchange ordersExchange() {
+    public DirectExchange ordersExchange() {
         return new DirectExchange(ORDERS_EXCHANGE);
     }
-
+    
     @Bean
-    Binding orderBinding() {
-        return BindingBuilder.bind(ordersQueue())
+    public Binding newOrderBinding() {
+        return BindingBuilder.bind(newOrderQueue())
                 .to(ordersExchange())
                 .with(NEW_ORDER_ROUTING_KEY);
     }
     
     @Bean
-    Binding orderUpdateBinding() {
+    public Queue orderUpdatesQueue() {
+        return new Queue(ORDER_UPDATES_QUEUE, true);
+    }
+    
+    @Bean
+    public Binding orderUpdateBinding() {
         return BindingBuilder.bind(orderUpdatesQueue())
                 .to(ordersExchange())
                 .with(ORDER_UPDATE_ROUTING_KEY);

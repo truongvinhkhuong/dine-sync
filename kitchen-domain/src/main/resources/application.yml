@@ -50,13 +50,13 @@ spring:
   # Kitchen Queue Configuration
   kitchen:
     queue:
-      orders: kitchen-orders-queue
-      order-updates: kitchen-order-updates-queue
+      orders: kitchen-order-queue
+      order-updates: order.status.updates.queue
     exchange:
-      orders: orders-exchange
+      orders: restaurant.exchange
     routing-key:
-      orders: new-order
-      order-updates: order-update
+      orders: kitchen.orders
+      order-updates: kitchen.order.updates
 
 # Server Configuration
 server:

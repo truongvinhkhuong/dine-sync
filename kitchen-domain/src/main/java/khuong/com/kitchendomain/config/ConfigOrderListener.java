@@ -51,4 +51,20 @@ public class ConfigOrderListener {
             log.error("Error updating order: {}", e.getMessage());
         }
     }
+    
+    // Change from property placeholder to constant
+    @RabbitListener(queues = RabbitMQConfig.NEW_ORDER_QUEUE)
+    public void receiveOrder(Map<String, Object> message) {
+        log.info("Received message: {}", message);
+        try {
+            Long orderId = Long.valueOf(message.get("orderId").toString());
+            String status = message.get("status").toString();
+            
+            kitchenOrderService.processNewOrder(orderId, status);
+            
+            log.info("Order processed successfully");
+        } catch (Exception e) {
+            log.error("Error processing order: {}", e.getMessage(), e);
+        }
+    }
 }
