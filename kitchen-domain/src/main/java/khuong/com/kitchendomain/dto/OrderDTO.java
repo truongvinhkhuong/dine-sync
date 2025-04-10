@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.Collections;
 
 @Data
 @Builder
@@ -27,15 +28,28 @@ public class OrderDTO {
     private List<OrderItemDTO> items;
 
     public static OrderDTO fromEntity(Order order) {
-        return OrderDTO.builder()
+        OrderDTO.OrderDTOBuilder builder = OrderDTO.builder()
                 .id(order.getId())
-                .tableNumber(order.getTable().getTableNumber())
-                .status(order.getStatus().name())
+                .status(order.getStatus() != null ? order.getStatus().name() : "UNKNOWN")
                 .note(order.getNote())
-                .createdAt(order.getCreatedAt())
-                .items(order.getItems().stream()
-                        .map(OrderItemDTO::fromEntity)
-                        .collect(Collectors.toList()))
-                .build();
+                .createdAt(order.getCreatedAt());
+        
+        // Xử lý table null
+        if (order.getTable() != null) {
+            builder.tableNumber(order.getTable().getTableNumber());
+        } else {
+            builder.tableNumber("Unknown");
+        }
+        
+        // Xử lý items null
+        if (order.getItems() != null) {
+            builder.items(order.getItems().stream()
+                    .map(OrderItemDTO::fromEntity)
+                    .collect(Collectors.toList()));
+        } else {
+            builder.items(Collections.emptyList());
+        }
+        
+        return builder.build();
     }
 }

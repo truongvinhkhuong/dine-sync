@@ -16,20 +16,22 @@ import java.util.Map;
 public class OrderListener {
     private final KitchenOrderService kitchenOrderService;
 
-    @RabbitListener(queues = "${spring.kitchen.queue.orders}")
+    // nhận đơn mới
+    @RabbitListener(queues = RabbitMQConfig.NEW_ORDER_QUEUE)
     public void handleNewOrder(OrderToKitchenDto orderDto) {
         log.info("Nhận thông báo đơn hàng mới: {}", orderDto);
         
         try {
-            // Xử lý đơn hàng mới
             kitchenOrderService.processNewOrder(orderDto);
             log.info("Đã xử lý đơn hàng mới với ID: {}", orderDto.getOrderId());
         } catch (Exception e) {
             log.error("Lỗi khi xử lý đơn hàng mới: {}", e.getMessage(), e);
+            // ... adđ logic gửi đơn hàng vào dead letter queue 
         }
     }
 
-    @RabbitListener(queues = "${spring.kitchen.queue.order-updates}")
+    // update trạng thái đơn hàng
+    @RabbitListener(queues = RabbitMQConfig.ORDER_UPDATES_QUEUE)
     public void handleOrderUpdates(Map<String, Object> message) {
         log.info("Received order update: {}", message);
         
@@ -38,9 +40,9 @@ public class OrderListener {
             String status = message.get("status").toString();
             
             kitchenOrderService.updateOrderStatus(orderId, status);
-            log.info("Order status updated successfully: {}", orderId);
+            log.info("Order {} status updated to: {}", orderId, status);
         } catch (Exception e) {
-            log.error("Error updating order status: {}", e.getMessage(), e);
+            log.error("Error updating order: {}", e.getMessage(), e);
         }
     }
 }

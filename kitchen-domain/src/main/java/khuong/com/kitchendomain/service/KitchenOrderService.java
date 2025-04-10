@@ -38,7 +38,7 @@ public class KitchenOrderService {
     @Autowired
     private TableRepository tableRepository;
     
-    // get all đơn hàng đang chờ xử lý
+    @Transactional(readOnly = true)
     public List<OrderDTO> getPendingOrders() {
         List<Order> pendingOrders = orderRepository.findByStatus(OrderStatus.PENDING);
         return pendingOrders.stream()
@@ -46,7 +46,7 @@ public class KitchenOrderService {
                 .collect(Collectors.toList());
     }
 
-    //get all đơn hàng đang được xử lý
+    @Transactional(readOnly = true)
     public List<OrderDTO> getInProgressOrders() {
         List<Order> inProgressOrders = orderRepository.findByStatus(OrderStatus.IN_PROGRESS);
         return inProgressOrders.stream()
@@ -54,13 +54,13 @@ public class KitchenOrderService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public OrderDTO getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
         return OrderDTO.fromEntity(order);
     }
 
-    // update menu item status
     @Transactional
     public void updateOrderItemStatus(OrderItemStatusUpdateDTO updateDTO) {
         OrderItem orderItem = orderItemRepository.findById(updateDTO.getOrderItemId())
@@ -222,42 +222,38 @@ public class KitchenOrderService {
         orderStatusPublisher.publishOrderStatusUpdate(order);
     }
     
+    @Transactional(readOnly = true)
     public List<OrderDTO> getOrdersByTableNumber(String tableNumber) {
-        
         List<Order> orders = orderRepository.findByTableNumber(tableNumber);
         return orders.stream()
                 .map(OrderDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
-
-
-
-
-        @Transactional
-        public void processNewOrder(Long orderId, String status) {
-            log.info("Processing new order: {} with status: {}", orderId, status);
-            
-            // Kiểm tra xem đơn hàng đã tồn tại chưa
-            if (orderRepository.existsById(orderId)) {
-                log.info("Đơn hàng với ID {} đã tồn tại", orderId);
-                return;
-            }
-            
-            try {
-                // Tạo đơn hàng mới
-                Order order = new Order();
-                order.setId(orderId);
-                order.setStatus(OrderStatus.valueOf(status));
-                
-                // Lưu đơn hàng (không có thông tin chi tiết)
-                // Thông tin chi tiết sẽ được cập nhật sau khi nhận được từ domain-2
-                orderRepository.save(order);
-                
-                log.info("Đã tạo đơn hàng mới với ID: {}", orderId);
-            } catch (Exception e) {
-                log.error("Lỗi khi xử lý đơn hàng mới: {}", e.getMessage(), e);
-                throw new RuntimeException("Không thể xử lý đơn hàng mới", e);
-            }
+    @Transactional
+    public void processNewOrder(Long orderId, String status) {
+        log.info("Processing new order: {} with status: {}", orderId, status);
+        
+        // Kiểm tra xem đơn hàng đã tồn tại chưa
+        if (orderRepository.existsById(orderId)) {
+            log.info("Đơn hàng với ID {} đã tồn tại", orderId);
+            return;
         }
+        
+        try {
+            // Tạo đơn hàng mới
+            Order order = new Order();
+            order.setId(orderId);
+            order.setStatus(OrderStatus.valueOf(status));
+            
+            // Lưu đơn hàng (không có thông tin chi tiết)
+            // Thông tin chi tiết sẽ được cập nhật sau khi nhận được từ domain-2
+            orderRepository.save(order);
+            
+            log.info("Đã tạo đơn hàng mới với ID: {}", orderId);
+        } catch (Exception e) {
+            log.error("Lỗi khi xử lý đơn hàng mới: {}", e.getMessage(), e);
+            throw new RuntimeException("Không thể xử lý đơn hàng mới", e);
+        }
+    }
 }

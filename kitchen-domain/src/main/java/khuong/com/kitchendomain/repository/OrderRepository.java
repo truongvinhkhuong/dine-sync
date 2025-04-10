@@ -11,8 +11,9 @@ import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order> findByStatus(OrderStatus status);
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.table LEFT JOIN FETCH o.items WHERE o.status = :status")
+    List<Order> findByStatus(@Param("status") OrderStatus status);
     
-    @Query("SELECT o FROM Order o WHERE o.table.tableNumber = :tableNumber")
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.table LEFT JOIN FETCH o.items WHERE o.table.tableNumber = :tableNumber")
     List<Order> findByTableNumber(@Param("tableNumber") String tableNumber);
 }

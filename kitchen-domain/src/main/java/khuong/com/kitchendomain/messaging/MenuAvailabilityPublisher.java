@@ -25,7 +25,7 @@ public class MenuAvailabilityPublisher {
 
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.ORDERS_EXCHANGE,
-                "menu-availability",
+                RabbitMQConfig.MENU_AVAILABILITY_ROUTING_KEY,
                 message
         );
 

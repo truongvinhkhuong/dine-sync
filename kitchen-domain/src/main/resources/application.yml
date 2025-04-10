@@ -64,6 +64,11 @@ server:
   servlet:
     context-path: /kitchen
   forward-headers-strategy: framework
+  tomcat:
+    max-connections: 10000
+    accept-count: 100
+    connection-timeout: 20000
+    keep-alive-timeout: 60000
 
 # JWT Configuration
 app:

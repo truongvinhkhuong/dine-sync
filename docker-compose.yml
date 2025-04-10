@@ -217,7 +217,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=123456
       - SERVER_PORT=8083
-      - SERVER_SERVLET_CONTEXT_PATH=/kitchen
+      # - SERVER_SERVLET_CONTEXT_PATH=/kitchen
       - SERVER_FORWARD_HEADERS_STRATEGY=framework
       - JWT_SECRET=rSp/kisYeCdda6X8j0HA6jYCcpevXe6LQe3wHTPTC7GP5bQ5gqN15cLkAhtVomGpmT08rSqoyiD1wRxFOGhg8A==
       - JWT_EXPIRATION=86400000
@@ -256,6 +256,7 @@ services:
       - "traefik.http.routers.kitchen-domain.rule=PathPrefix(`/kitchen`)"
       - "traefik.http.routers.kitchen-domain.entrypoints=web"
       - "traefik.http.services.kitchen-domain.loadbalancer.server.port=8083"
+    
     networks:
       - app-net
 

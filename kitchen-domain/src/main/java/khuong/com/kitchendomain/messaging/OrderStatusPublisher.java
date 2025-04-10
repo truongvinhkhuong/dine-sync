@@ -48,4 +48,19 @@ public class OrderStatusPublisher {
 
         log.info("Đã gửi cập nhật trạng thái món ăn: {} - {}", orderItem.getId(), orderItem.getStatus());
     }
+
+    public void publishOrderItemStatusChange(Long orderItemId, String status) {
+        Map<String, Object> message = new HashMap<>();
+        message.put("orderItemId", orderItemId);
+        message.put("status", status);
+        message.put("timestamp", System.currentTimeMillis());
+
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.ORDERS_EXCHANGE,
+                RabbitMQConfig.ORDER_STATUS_ROUTING_KEY,
+                message
+        );
+
+        log.info("Đã gửi thông báo cập nhật trạng thái món ăn #{}: {}", orderItemId, status);
+    }
 }

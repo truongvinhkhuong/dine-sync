@@ -14,12 +14,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String NEW_ORDER_QUEUE = "kitchen-orders-queue";
-    public static final String ORDERS_EXCHANGE = "orders-exchange";
-    public static final String NEW_ORDER_ROUTING_KEY = "new-order";
+    public static final String NEW_ORDER_QUEUE = "kitchen.orders";
+    public static final String ORDER_UPDATES_QUEUE = "kitchen.order-updates";
+    public static final String ORDERS_EXCHANGE = "orders.exchange";
     
-    public static final String ORDER_UPDATES_QUEUE = "kitchen-order-updates-queue";
+    public static final String NEW_ORDER_ROUTING_KEY = "new-order";
     public static final String ORDER_UPDATE_ROUTING_KEY = "order-update";
+    public static final String ORDER_STATUS_ROUTING_KEY = "order-status";
+    public static final String MENU_AVAILABILITY_ROUTING_KEY = "menu-availability";
 
     @Bean
     public Queue newOrderQueue() {
