@@ -4,6 +4,8 @@ import khuong.com.kitchendomain.dto.OrderDTO;
 import khuong.com.kitchendomain.dto.OrderItemStatusUpdateDTO;
 import khuong.com.kitchendomain.service.KitchenOrderService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +48,11 @@ public class KitchenOrderController {
 
     @PutMapping("/items/status")
     public ResponseEntity<Void> updateOrderItemStatus(@RequestBody OrderItemStatusUpdateDTO updateDTO) {
-        kitchenOrderService.updateOrderItemStatus(updateDTO);
-        return ResponseEntity.ok().build();
+        try {
+            kitchenOrderService.updateOrderItemStatus(updateDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

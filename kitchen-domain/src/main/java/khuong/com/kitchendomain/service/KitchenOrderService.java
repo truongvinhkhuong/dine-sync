@@ -63,16 +63,24 @@ public class KitchenOrderService {
 
     @Transactional
     public void updateOrderItemStatus(OrderItemStatusUpdateDTO updateDTO) {
+        log.info("Updating order item status: {}", updateDTO);
+        
         OrderItem orderItem = orderItemRepository.findById(updateDTO.getOrderItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy món ăn với ID: " + updateDTO.getOrderItemId()));
         
-        OrderItemStatus newStatus = OrderItemStatus.valueOf(updateDTO.getStatus());
-        orderItem.setStatus(newStatus);
-        orderItemRepository.save(orderItem);
-        
-        updateOrderStatusIfNeeded(orderItem.getOrder());
-
-        orderStatusPublisher.publishOrderItemStatusUpdate(orderItem);
+        try {
+            OrderItemStatus newStatus = OrderItemStatus.valueOf(updateDTO.getStatus().toUpperCase());
+            orderItem.setStatus(newStatus);
+            orderItemRepository.save(orderItem);
+            
+            updateOrderStatusIfNeeded(orderItem.getOrder());
+            orderStatusPublisher.publishOrderItemStatusUpdate(orderItem);
+            
+            log.info("Successfully updated order item status: {}", updateDTO);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid status value: {}", updateDTO.getStatus());
+            throw new IllegalArgumentException("Trạng thái không hợp lệ: " + updateDTO.getStatus());
+        }
     }
 
    // start processing order
@@ -215,10 +223,15 @@ public class KitchenOrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
         
         OrderStatus newStatus = OrderStatus.valueOf(status);
+        
+        // Kiểm tra trạng thái hiện tại
+        if (order.getStatus() == newStatus) {
+            log.info("Order {} already in status {}, skipping update", orderId, status);
+            return;
+        }
+        
         order.setStatus(newStatus);
         orderRepository.save(order);
-        
-
         orderStatusPublisher.publishOrderStatusUpdate(order);
     }
     
