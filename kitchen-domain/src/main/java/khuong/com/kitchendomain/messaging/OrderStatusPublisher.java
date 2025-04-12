@@ -18,18 +18,27 @@ public class OrderStatusPublisher {
     private final RabbitTemplate rabbitTemplate;
 
     public void publishOrderStatusUpdate(Order order) {
-        Map<String, Object> message = new HashMap<>();
-        message.put("orderId", order.getId());
-        message.put("status", order.getStatus().name());
-        message.put("timestamp", System.currentTimeMillis());
+        try {
+            Map<String, Object> message = new HashMap<>();
+            message.put("orderId", order.getId());
+            message.put("status", order.getStatus().name());
+            message.put("timestamp", System.currentTimeMillis());
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.ORDERS_EXCHANGE,
-                RabbitMQConfig.ORDER_UPDATE_ROUTING_KEY,
-                message
-        );
+            log.info("Đang gửi thông báo cập nhật trạng thái đơn hàng: {} -> {}", 
+                    order.getId(), order.getStatus().name());
+            
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.ORDERS_EXCHANGE,
+                    RabbitMQConfig.ORDER_UPDATE_ROUTING_KEY,
+                    message
+            );
 
-        log.info("Đã gửi cập nhật trạng thái đơn hàng: {} - {}", order.getId(), order.getStatus());
+            log.info("Đã gửi cập nhật trạng thái đơn hàng thành công: {} - {}", 
+                    order.getId(), order.getStatus());
+        } catch (Exception e) {
+            log.error("Lỗi khi gửi thông báo RabbitMQ: {}", e.getMessage(), e);
+            // Không ném ngoại lệ để không làm gián đoạn luồng chính
+        }
     }
 
     public void publishOrderItemStatusUpdate(OrderItem orderItem) {

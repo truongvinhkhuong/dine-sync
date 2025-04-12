@@ -55,6 +55,14 @@ public class KitchenOrderService {
     }
 
     @Transactional(readOnly = true)
+    public List<OrderDTO> getConfirmedOrders() {
+        List<Order> confirmedOrders = orderRepository.findByStatus(OrderStatus.CONFIRMED);
+        return confirmedOrders.stream()
+                .map(OrderDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public OrderDTO getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
@@ -86,17 +94,45 @@ public class KitchenOrderService {
    // start processing order
     @Transactional
     public void startProcessingOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
+        log.info("Bắt đầu xử lý đơn hàng: {}", orderId);
         
-        if (order.getStatus() == OrderStatus.CONFIRMED) {
-            order.setStatus(OrderStatus.IN_PROGRESS);
-            orderRepository.save(order);
+        try {
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
             
-            // Gửi thông báo cập nhật trạng thái
-            orderStatusPublisher.publishOrderStatusUpdate(order);
-        } else {
-            throw new IllegalStateException("Đơn hàng không ở trạng thái chờ xử lý");
+            log.info("Trạng thái hiện tại của đơn hàng {}: {}", orderId, order.getStatus());
+            
+            // Kiểm tra trạng thái đơn hàng
+            if (order.getStatus() != OrderStatus.CONFIRMED) {
+                throw new IllegalStateException("Đơn hàng không ở trạng thái đã xác nhận (CONFIRMED)");
+            }
+            
+            // Cập nhật trạng thái đơn hàng
+            order.setStatus(OrderStatus.IN_PROGRESS);
+            
+            // Lưu đơn hàng
+            try {
+                orderRepository.save(order);
+                log.info("Đã cập nhật đơn hàng {} sang trạng thái IN_PROGRESS", orderId);
+            } catch (Exception e) {
+                log.error("Lỗi khi lưu đơn hàng: {}", e.getMessage(), e);
+                throw new RuntimeException("Không thể lưu đơn hàng", e);
+            }
+            
+            // Gửi thông báo
+            try {
+                orderStatusPublisher.publishOrderStatusUpdate(order);
+                log.info("Đã gửi thông báo cập nhật trạng thái đơn hàng {}", orderId);
+            } catch (Exception e) {
+                log.error("Lỗi khi gửi thông báo: {}", e.getMessage(), e);
+                // Không ném ngoại lệ ở đây để không hủy bỏ transaction
+            }
+        } catch (ResourceNotFoundException | IllegalStateException e) {
+            log.warn("Lỗi nghiệp vụ: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Lỗi không xác định: {}", e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi xử lý đơn hàng: " + e.getMessage(), e);
         }
     }
 
@@ -267,6 +303,22 @@ public class KitchenOrderService {
         } catch (Exception e) {
             log.error("Lỗi khi xử lý đơn hàng mới: {}", e.getMessage(), e);
             throw new RuntimeException("Không thể xử lý đơn hàng mới", e);
+        }
+    }
+
+    @Transactional
+    public void confirmOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
+        
+        if (order.getStatus() == OrderStatus.PENDING) {
+            order.setStatus(OrderStatus.CONFIRMED);
+            orderRepository.save(order);
+            
+            // Gửi thông báo cập nhật trạng thái
+            orderStatusPublisher.publishOrderStatusUpdate(order);
+        } else {
+            throw new IllegalStateException("Đơn hàng không ở trạng thái chờ xử lý (PENDING)");
         }
     }
 }
