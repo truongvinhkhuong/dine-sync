@@ -63,6 +63,16 @@ public class KitchenOrderService {
     }
 
     @Transactional(readOnly = true)
+    public List<OrderDTO> getRejectedOrders() {
+        log.info("Lấy danh sách đơn hàng đã bị từ chối");
+        List<Order> rejectedOrders = orderRepository.findByStatus(OrderStatus.CANCELLED);
+        
+        return rejectedOrders.stream()
+                .map(OrderDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public OrderDTO getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
@@ -319,6 +329,35 @@ public class KitchenOrderService {
             orderStatusPublisher.publishOrderStatusUpdate(order);
         } else {
             throw new IllegalStateException("Đơn hàng không ở trạng thái chờ xử lý (PENDING)");
+        }
+    }
+
+    @Transactional
+    public void rejectOrder(Long orderId, String reason) {
+        log.info("Đang từ chối đơn hàng: {} với lý do: {}", orderId, reason);
+        
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
+        
+        // Chỉ từ chối đơn hàng ở trạng thái PENDING hoặc CONFIRMED
+        if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.CONFIRMED) {
+            throw new IllegalStateException("Chỉ có thể từ chối đơn hàng đang ở trạng thái chờ xử lý (PENDING) hoặc đã xác nhận (CONFIRMED)");
+        }
+        
+        order.setStatus(OrderStatus.CANCELLED);
+        // Nếu có trường note trong entity Order, có thể lưu lý do tại đây
+        if (reason != null && !reason.trim().isEmpty()) {
+            order.setNote("Từ chối: " + reason);
+        }
+        
+        orderRepository.save(order);
+        
+        // Gửi thông báo về việc thay đổi trạng thái
+        try {
+            orderStatusPublisher.publishOrderStatusUpdate(order);
+            log.info("Đã gửi thông báo từ chối đơn hàng {}", orderId);
+        } catch (Exception e) {
+            log.error("Lỗi khi gửi thông báo từ chối đơn hàng: {}", e.getMessage());
         }
     }
 }

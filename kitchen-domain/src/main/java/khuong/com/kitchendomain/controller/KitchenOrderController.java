@@ -2,6 +2,7 @@ package khuong.com.kitchendomain.controller;
 
 import khuong.com.kitchendomain.dto.OrderDTO;
 import khuong.com.kitchendomain.dto.OrderItemStatusUpdateDTO;
+import khuong.com.kitchendomain.dto.OrderRejectDTO;
 import khuong.com.kitchendomain.exception.ResourceNotFoundException;
 import khuong.com.kitchendomain.service.KitchenOrderService;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,22 @@ public class KitchenOrderController {
     @GetMapping("/confirmed")
     public ResponseEntity<List<OrderDTO>> getConfirmedOrders() {
         return ResponseEntity.ok(kitchenOrderService.getConfirmedOrders());
+    }
+
+    @GetMapping("/rejected")
+    public ResponseEntity<List<OrderDTO>> getRejectedOrders() {
+        try {
+            List<OrderDTO> orders = kitchenOrderService.getRejectedOrders();
+            if (orders.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy danh sách đơn hàng đã từ chối: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .header("X-Error-Message", "Lỗi nội bộ: " + e.getMessage())
+                    .build();
+        }
     }
 
     @GetMapping("/{orderId}")
@@ -81,6 +98,30 @@ public class KitchenOrderController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/{orderId}/reject")
+    public ResponseEntity<Void> rejectOrder(
+            @PathVariable Long orderId, 
+            @RequestBody(required = false) OrderRejectDTO rejectDTO) {
+        try {
+            String reason = (rejectDTO != null) ? rejectDTO.getReason() : null;
+            kitchenOrderService.rejectOrder(orderId, reason);
+            return ResponseEntity.ok().build();
+        } catch (ResourceNotFoundException e) {
+            log.warn("Không tìm thấy đơn hàng: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            log.warn("Không thể từ chối đơn hàng: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .header("X-Error-Message", e.getMessage())
+                    .build();
+        } catch (Exception e) {
+            log.error("Lỗi không xác định khi từ chối đơn hàng {}: {}", orderId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .header("X-Error-Message", "Lỗi nội bộ: " + e.getMessage())
+                    .build();
         }
     }
 }
