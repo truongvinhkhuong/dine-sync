@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "8090:8080"  # Changed to expose dashboard on port 8090
+      - "8090:8080" 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command:
@@ -20,6 +20,7 @@ services:
       - "--accesslog=true"
       - "--providers.docker.network=app-net"
       - "--providers.docker.watch=true"  # Make sure Docker provider watches for changes
+      - "--providers.docker.defaultrule=Host(`localhost`)"
     networks:
       - app-net
     healthcheck:
@@ -140,6 +141,12 @@ services:
       - "traefik.http.routers.domain-1.entrypoints=web"
       - "traefik.http.services.domain-1.loadbalancer.server.port=8081"
       - "traefik.http.services.domain-1.loadbalancer.passHostHeader=true"
+      # Thêm middleware CORS
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=*"
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowheaders=Content-Type,Authorization"
+      - "traefik.http.middlewares.cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors.headers.addvaryheader=true"
     networks:
       - app-net
 
@@ -190,9 +197,13 @@ services:
       - "traefik.http.routers.domain-2.rule=PathPrefix(`/domain2`)"
       - "traefik.http.routers.domain-2.entrypoints=web"
       - "traefik.http.services.domain-2.loadbalancer.server.port=8082"
-      # Only use the strip middleware if you want to remove the path prefix
-      # - "traefik.http.middlewares.domain-2-strip.stripprefix.prefixes=/domain2"
-      # - "traefik.http.routers.domain-2.middlewares=domain-2-strip@docker"
+      - "traefik.http.routers.domain-2.middlewares=cors@docker"
+      # Thêm middleware CORS
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=*"
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowheaders=Content-Type,Authorization"
+      - "traefik.http.middlewares.cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors.headers.addvaryheader=true"
     networks:
       - app-net
 
@@ -256,7 +267,12 @@ services:
       - "traefik.http.routers.kitchen-domain.rule=PathPrefix(`/kitchen`)"
       - "traefik.http.routers.kitchen-domain.entrypoints=web"
       - "traefik.http.services.kitchen-domain.loadbalancer.server.port=8083"
-    
+      # Thêm middleware CORS
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=*"
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowheaders=Content-Type,Authorization"
+      - "traefik.http.middlewares.cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors.headers.addvaryheader=true"
     networks:
       - app-net
 
@@ -274,6 +290,47 @@ services:
       retries: 5
     volumes:
       - redisdata:/data
+
+  smart-order-fe:
+    build:
+      context: ../midterm-fe/smart-order-fe
+      dockerfile: Dockerfile
+    container_name: smart-order-fe
+    restart: unless-stopped
+    expose:
+      - "80"
+    ports:
+      - "3000:80" 
+    depends_on:
+      domain-1:
+        condition: service_healthy
+      domain-2:
+        condition: service_healthy
+      kitchen-domain:
+        condition: service_healthy
+    environment:
+      - API_URL=http://localhost
+      - IDENTITY_API_PATH=/identity
+      - DOMAIN2_API_PATH=/domain2
+      - KITCHEN_API_PATH=/kitchen
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=app-net"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.priority=1" 
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      # Thêm middleware CORS
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=*"
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowheaders=Content-Type,Authorization"
+      - "traefik.http.middlewares.cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors.headers.addvaryheader=true"
+    networks:
+      - app-net
+    extra_hosts:
+      - "domain-2:172.17.0.1" 
+      - "traefik:172.17.0.1" 
 
 networks:
   app-net:
