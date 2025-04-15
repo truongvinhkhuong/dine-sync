@@ -293,7 +293,7 @@ services:
 
   smart-order-fe:
     build:
-      context: ../midterm-fe/smart-order-fe
+      context: ../smart-order-fe
       dockerfile: Dockerfile
     container_name: smart-order-fe
     restart: unless-stopped
