@@ -1,4 +1,4 @@
-# SmartOrder-beMicroservice
+# Smart Order
 
 ![Smart Order System](https://img.shields.io/badge/Smart%20Order-v1.0-blue)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green)

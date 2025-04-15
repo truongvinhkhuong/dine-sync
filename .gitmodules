@@ -4,6 +4,11 @@
 [submodule "domain-2"]
 	path = domain-2
 	url = https://github.com/khuong2924/smartorder-domain2
+[submodule "kitchen-domain"]
+	path = kitchen-domain
+	url = https://github.com/khuong2924/kitchen-domain
 [submodule "smart-order-fe"]
 	path = smart-order-fe
 	url = https://github.com/khuong2924/SmartOrder-fe
+
+
