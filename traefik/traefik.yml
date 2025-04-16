@@ -1,0 +1,29 @@
+api:
+  dashboard: true
+  insecure: true  # should false trong production
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: app-net
+    watch: true
+
+certificatesResolvers:
+  myresolver:
+    acme:
+      # email: 
+      storage: acme.json
+      httpChallenge:
+        entryPoint: web
