@@ -1,12 +1,25 @@
 version: '3.8'
 
+networks:
+  app-net:
+    driver: bridge
+
+volumes:
+  pgdata1:
+  pgdata2:
+  rabbitmqdata:
+  redisdata:
+
 services:
   traefik:
     image: traefik:v3.3
     container_name: traefik
     restart: always
+    # map host ports không trùng 80/443 của host-Nginx
     ports:
-      - "127.0.0.1:8080:80" 
+      - "8080:80"              # public HTTP trên host:8080
+      - "8443:443"             # public HTTPS trên host:8443
+      - "127.0.0.1:8081:8080"  # dashboard (chỉ local)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./letsencrypt:/letsencrypt
@@ -24,18 +37,19 @@ services:
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       - "--providers.docker.network=app-net"
       - "--providers.docker.defaultrule=Host(`truongvinhkhuong.io.vn`)"
-      - "--log.level=DEBUG"  # Add debug logging
-      - "--accesslog=true"   # Enable access logs
+      - "--log.level=DEBUG"
+      - "--accesslog=true"
     networks:
       - app-net
     labels:
+      # Dashboard qua HTTPS trên domain + path /dashboard
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`truongvinhkhuong.io.vn`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.middlewares=auth"
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
-      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$xyS4ESFe$$9PQfEFKmJtJmOJTYfFTYm0" # Replace with your own credentials (htpasswd -nb admin secure_password)
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$xyS4ESFe$$9PQfEFKmJtJmOJTYfFTYm0"
 
   db1:
     image: postgres:15
@@ -187,7 +201,7 @@ services:
 
   kitchen-domain:
     build:
-      context: . 
+      context: .
       dockerfile: kitchen-domain/Dockerfile
     container_name: kitchen-domain
     restart: always
@@ -211,6 +225,8 @@ services:
       db2:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      domain-2:
         condition: service_healthy
     networks:
       - app-net
@@ -262,14 +278,3 @@ services:
       - "traefik.http.middlewares.fe-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
       - "traefik.http.middlewares.fe-cors.headers.accesscontrolalloworiginlist=*"
       - "traefik.http.middlewares.fe-cors.headers.accesscontrolallowheaders=Content-Type,Authorization"
-      - "traefik.http.routers.frontend.middlewares=fe-cors"
-
-networks:
-  app-net:
-    driver: bridge
-
-volumes:
-  pgdata1:
-  pgdata2:
-  rabbitmqdata:
-  redisdata:
