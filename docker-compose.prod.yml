@@ -30,7 +30,8 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.myresolver.acme.email=truongkhuong666@gmail.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       - "--providers.docker.network=app-net"
@@ -152,8 +153,9 @@ services:
       - "traefik.http.services.domain-1.loadbalancer.server.port=8081"
       - "traefik.http.middlewares.identity-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
       - "traefik.http.middlewares.identity-cors.headers.accesscontrolalloworiginlist=*"
-      - "traefik.http.middlewares.identity-cors.headers.accesscontrolallowheaders=Content-Type,Authorization"
-      - "traefik.http.middlewares.identity-cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.identity-cors.headers.accesscontrolallowheaders=Content-Type,Authorization,Origin,Accept"
+      - "traefik.http.middlewares.identity-cors.headers.accesscontrolmaxage=3600"
+      - "traefik.http.middlewares.identity-cors.headers.addvaryheader=true"
       - "traefik.http.routers.domain-1.middlewares=identity-cors"
 
   domain-2:
