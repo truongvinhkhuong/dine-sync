@@ -49,6 +49,9 @@ services:
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
       - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$xyS4ESFe$$9PQfEFKmJtJmOJTYfFTYm0"
+      - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.security-headers.headers.stsPreload=true"
 
   db1:
     image: postgres:15
@@ -153,7 +156,7 @@ services:
       - "traefik.http.services.domain-1.loadbalancer.server.port=8081"
       - "traefik.http.middlewares.identity-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
       - "traefik.http.middlewares.identity-cors.headers.accesscontrolalloworiginlist=*"
-      - "traefik.http.middlewares.identity-cors.headers.accesscontrolallowheaders=Content-Type,Authorization,Origin,Accept"
+      - "traefik.http.middlewares.identity-cors.headers.accesscontrolallowheaders=Content-Type,Authorization,Origin,Accept,X-Requested-With"
       - "traefik.http.middlewares.identity-cors.headers.accesscontrolmaxage=3600"
       - "traefik.http.middlewares.identity-cors.headers.addvaryheader=true"
       - "traefik.http.routers.domain-1.middlewares=identity-cors"
