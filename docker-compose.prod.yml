@@ -6,8 +6,8 @@ services:
     container_name: traefik
     restart: always
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "80:80"   
+      - "443:443"  
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./letsencrypt:/letsencrypt
@@ -21,10 +21,12 @@ services:
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.email=your-email@example.com"
+      - "--certificatesresolvers.myresolver.acme.email=truongkhuong666@gmail.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       - "--providers.docker.network=app-net"
       - "--providers.docker.defaultrule=Host(`truongvinhkhuong.io.vn`)"
+      - "--log.level=DEBUG"  # Add debug logging
+      - "--accesslog=true"   # Enable access logs
     networks:
       - app-net
     labels:

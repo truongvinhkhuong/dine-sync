@@ -23,7 +23,7 @@ providers:
 certificatesResolvers:
   myresolver:
     acme:
-      # email: 
+      email: truongkhuong666@gmail.com
       storage: acme.json
       httpChallenge:
         entryPoint: web
