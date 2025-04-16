@@ -38,6 +38,9 @@ services:
       - "--providers.docker.defaultrule=Host(`truongvinhkhuong.io.vn`)"
       - "--log.level=DEBUG"
       - "--accesslog=true"
+      - "--serverstransport.insecureskipverify=true"
+      - "--entryPoints.websecure.forwardedHeaders.insecure=true"
+      - "--entryPoints.web.forwardedHeaders.insecure=true"
     networks:
       - app-net
     labels:
@@ -269,6 +272,7 @@ services:
       - IDENTITY_API_PATH=/identity
       - DOMAIN2_API_PATH=/domain2
       - KITCHEN_API_PATH=/kitchen
+      - NODE_ENV=production
     networks:
       - app-net
     labels:
@@ -280,4 +284,12 @@ services:
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
       - "traefik.http.middlewares.fe-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
       - "traefik.http.middlewares.fe-cors.headers.accesscontrolalloworiginlist=*"
-      - "traefik.http.middlewares.fe-cors.headers.accesscontrolallowheaders=Content-Type,Authorization"
+      - "traefik.http.middlewares.fe-cors.headers.accesscontrolallowheaders=Content-Type,Authorization,Origin,Accept,X-Requested-With"
+      - "traefik.http.middlewares.fe-cors.headers.accesscontrolmaxage=3600"
+      - "traefik.http.middlewares.fe-cors.headers.addvaryheader=true"
+      - "traefik.http.middlewares.fe-security.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.fe-security.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.fe-security.headers.stsPreload=true"
+      - "traefik.http.middlewares.fe-security.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.fe-security.headers.customresponseheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.frontend.middlewares=fe-cors,fe-security"
