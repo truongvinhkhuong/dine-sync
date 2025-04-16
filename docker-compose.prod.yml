@@ -15,11 +15,9 @@ services:
     image: traefik:v3.3
     container_name: traefik
     restart: always
-    # map host ports không trùng 80/443 của host-Nginx
     ports:
-      - "8080:80"              # public HTTP trên host:8080
-      - "8443:443"             # public HTTPS trên host:8443
-      - "127.0.0.1:8081:8080"  # dashboard (chỉ local)
+      - "80:80"     # public HTTP
+      - "443:443"   # public HTTPS
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./letsencrypt:/letsencrypt
@@ -60,7 +58,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=midterm-domain1
     expose:
-      - 5432
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -80,7 +78,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=midterm-domain2
     expose:
-      - 5432
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -95,12 +93,12 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     restart: always
-    expose:
-      - 5672
-      - 15672
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    expose:
+      - "5672"
+      - "15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -120,7 +118,7 @@ services:
     container_name: domain-1
     restart: always
     expose:
-      - 8081
+      - "8081"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db1:5432/midterm-domain1
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
@@ -167,7 +165,7 @@ services:
     container_name: domain-2
     restart: always
     expose:
-      - 8082
+      - "8082"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db2:5432/midterm-domain2
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
@@ -206,7 +204,7 @@ services:
     container_name: kitchen-domain
     restart: always
     expose:
-      - 8083
+      - "8083"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db2:5432/midterm-domain2
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
@@ -247,7 +245,7 @@ services:
     container_name: redis
     restart: always
     expose:
-      - 6379
+      - "6379"
     networks:
       - app-net
     volumes:
@@ -260,7 +258,7 @@ services:
     container_name: smart-order-fe
     restart: always
     expose:
-      - 80
+      - "80"
     environment:
       - API_URL=https://truongvinhkhuong.io.vn
       - IDENTITY_API_PATH=/identity
