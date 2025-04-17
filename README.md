@@ -8,7 +8,20 @@
 
 **Smart Order System** is designed to support in-house dining operations at restaurants, focusing on key functionalities for four types of users: waitstaff, kitchen staff, managers, and diners. Each user group is responsible for specific tasks, such as creating and managing orders, preparing dishes, and summarizing payment records.
 
-
+**Home** 
+![alt text](https://res.cloudinary.com/decz34g1a/image/upload/v1744875541/lvpxoj4flxp0iqnlvb2t.png "Giao diện trang chủ")
+**Featured Dishes** 
+![alt text](https://res.cloudinary.com/decz34g1a/image/upload/v1744875567/i7i5anenr1x6k3cztkmi.png "Món nổi bật")
+**MENU** 
+![alt text](https://res.cloudinary.com/decz34g1a/image/upload/v1744875635/unshynjqeqixitx8e7a9.png "Danh sách món")
+**Add to cart** 
+![alt text](https://res.cloudinary.com/decz34g1a/image/upload/v1744876049/mrv2vlaz1cqqia6gb4ur.png "Thêm vào giỏ hàng")
+**Cart** 
+![alt text](https://res.cloudinary.com/decz34g1a/image/upload/v1744875667/eku9syg3ymunn4p9xdj0.png "Giỏ hàng")
+**Order successfully** 
+![alt text](https://res.cloudinary.com/decz34g1a/image/upload/v1744875716/d5hprttf4nsaibgaspxv.png "Đặt hàng thành công")
+**Kitchen dashboard for update Order status** 
+![alt text](https://res.cloudinary.com/decz34g1a/image/upload/v1744875768/fiuhsuktgt6rzn300akf.png "Kiểm tra món")
 
 ---
 
