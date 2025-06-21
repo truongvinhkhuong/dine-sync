@@ -8,15 +8,6 @@
 
 **Smart Order System** is designed to support in-house dining operations at restaurants, focusing on key functionalities for four types of users: waitstaff, kitchen staff, managers, and diners. Each user group is responsible for specific tasks, such as creating and managing orders, preparing dishes, and summarizing payment records.
 
-## Go live: https://truongvinhkhuong.io.vn/
-***Role waiter:***
-- username: waiter
-- passwword: 29242924
-
-***Role kitchen staff:***
-- username: kitchen
-- passwword: 29242924
-
 **Home** 
 ![alt text](https://res.cloudinary.com/decz34g1a/image/upload/v1744875541/lvpxoj4flxp0iqnlvb2t.png "Giao diện trang chủ")
 **Featured Dishes** 
