@@ -1,12 +1,12 @@
-# Smart Order
+# DineSync
 
-![Smart Order System](https://img.shields.io/badge/Smart%20Order-v1.0-blue)
+![Dine Sync](https://img.shields.io/badge/Smart%20Order-v1.0-blue)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green)
 ![Microservices](https://img.shields.io/badge/Architecture-Microservices-orange)
 
 ## Overview
 
-**Smart Order System** is designed to support in-house dining operations at restaurants, focusing on key functionalities for four types of users: waitstaff, kitchen staff, managers, and diners. Each user group is responsible for specific tasks, such as creating and managing orders, preparing dishes, and summarizing payment records.
+**Dine Sync** (Smart Order System) is designed to support in-house dining operations at restaurants, focusing on key functionalities for four types of users: waitstaff, kitchen staff, managers, and diners. Each user group is responsible for specific tasks, such as creating and managing orders, preparing dishes, and summarizing payment records.
 
 **Home** 
 ![alt text](https://res.cloudinary.com/decz34g1a/image/upload/v1744875541/lvpxoj4flxp0iqnlvb2t.png "Giao diện trang chủ")
